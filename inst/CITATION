@@ -1,0 +1,12 @@
+citHeader("To cite hwsdr in publications use:")
+
+citEntry(
+  entry = "Misc",
+  title = "The hwsdr package: an interface to ORNL DAAC HWSD API endpoints",
+  author = personList(as.person("Koen Hufkens")),
+  year = "2021",
+  url = "https://bluegreen-labs.github.io/hwsdr/",
+  textVersion  =
+   paste("Hufkens (2021).",
+      "The hwsdr package: an interface to ORNL DAAC HWSD API endpoints")
+)
