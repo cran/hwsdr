@@ -10,37 +10,53 @@ library(terra)
 library(sf)
 library(hwsdr)
 
-t_sand <- terra::rast(system.file(
+sand <- terra::rast(system.file(
   package = "hwsdr",
-  "extdata/t_sand.tif"))
+  "extdata/d1_sand.tif"))
 
 # extract values
 values <- readRDS(system.file(
   package = "hwsdr",
-  "extdata/values.rds"))
+  "extdata/d1_values.rds")
+)
 
 
 ## ----eval = FALSE-------------------------------------------------------------
-#    values <- ws_subset(
-#      site = "HWSD",
-#      location = c(34, -81),
-#      param = c("T_SAND","T_SILT")
-#    )
+#  # set the ws_path variable using a FULL path name
+#  path <- ws_download(
+#    ws_path = "/your/full/path",
+#    verbose = TRUE
+#  )
+
+## ----eval = FALSE-------------------------------------------------------------
+#  usethis::edit_r_environ()
+
+## ----eval = FALSE-------------------------------------------------------------
+#  values <- ws_subset(
+#    site = "HWSD_V2",
+#    location = c(-81, 34),
+#    param = c("SAND","SILT"),
+#    layer = "D1",
+#    version = "2.0",
+#    ws_path = "/your/full/path"
+#  )
 
 ## -----------------------------------------------------------------------------
 print(values)
 
 ## ----eval = FALSE-------------------------------------------------------------
-#    t_sand <- ws_subset(
-#      site = "HWSD",
-#      location = c(32, -81, 34, -80),
-#      param = "T_SAND",
-#      path = tempdir(),
+#  sand <- ws_subset(
+#      location = c(-81, 32, -80, 34),
+#      param = "SAND",
+#      layer = "D1",
+#      version = "2.0",
+#      ws_path = Sys.getenv("WS_PATH"),
+#      # ws_path = "/your/full/path",
 #      internal = TRUE
 #    )
 
 ## -----------------------------------------------------------------------------
-terra::plot(t_sand)
+terra::plot(sand)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #    a <- sf::st_sf(a = 1:2,
@@ -51,8 +67,13 @@ terra::plot(t_sand)
 #  
 #    t_sand <- a %>%
 #      sf::st_bbox() %>%
-#      ws_subset(param = "T_SAND")
+#      ws_subset(
+#        version = "2.0",
+#        param = "SAND",
+#        layer = "D1",
+#        ws_path = Sys.getenv("WS_PATH")
+#        )
 
 ## -----------------------------------------------------------------------------
-terra::plot(t_sand)
+terra::plot(sand)
 

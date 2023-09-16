@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>hwsdr v2.0 functionality</title>
+<style type="text/css">
+/**
+ * Prism.s theme ported from highlight.js's xcode style
+ */
+pre code {
+  padding: 1em;
+}
+.token.comment {
+  color: #007400;
+}
+.token.punctuation {
+  color: #999;
+}
+.token.tag,
+.token.selector {
+  color: #aa0d91;
+}
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: #1c00cf;
+}
+.token.property,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: #c41a16;
+}
+.token.inserted {
+  background-color: #ccffd8;
+}
+.token.deleted {
+  background-color: #ffebe9;
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #9a6e3a;
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #836c28;
+}
+.token.function,
+.token.class-name {
+  color: #DD4A68;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #5c2699;
+}
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+</style>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+body, .footnotes, code { font-size: .9em; }
+li li { font-size: .95em; }
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+pre, img { max-width: 100%; }
+pre, pre:hover {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre) > code, code[class] { background-color: #F8F8F8; }
+code.language-undefined, pre > code:not([class]) {
+  background-color: inherit;
+  border: 1px solid #eee;
+}
+table {
+  margin: auto;
+  border-top: 1px solid #666;
+}
+table thead th { border-bottom: 1px solid #ddd; }
+th, td { padding: 5px; }
+thead, tfoot, tr:nth-child(even) { background: #eee; }
+blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 1em;
+  border-left: 0.5em solid #eee;
+}
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC .numbered li { list-style: none; }
+#TOC .numbered { padding-left: 0; }
+#TOC .numbered ul { padding-left: 1em; }
+table, .body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.footnote-ref a::before { content: "["; }
+.footnote-ref a::after { content: "]"; }
+.footnotes::before {
+  content: "";
+  display: block;
+  max-width: 20em;
+}
+
+@media print {
+  body {
+    font-size: 12pt;
+    max-width: 100%;
+  }
+  tr, img { page-break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  pre { white-space: pre; }
+}
+</style>
+</head>
+<body>
+<div class="include-before">
+</div>
+<div class="frontmatter">
+<div class="title"><h1>hwsdr v2.0 functionality</h1></div>
+<div class="author"><h2>Koen Hufkens</h2></div>
+<div class="date"><h3>2023-09-16</h3></div>
+</div>
+<div class="body">
+<p>Although the package provides support for the programmatic interface to the Harmonized World Soil Database ‘HWSD’ web services (<a href="https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1247">https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1247</a>), a newer <a href="https://gaez.fao.org/pages/hwsd">HWSD v2.0 version</a> of the database has been released by the Food and Agriculture Organization (FAO). However, this version is not yet available on the ORNL DAAC. In the mean time, I provide point and region based extraction of data through the package with minimal manual downloads or data manipulations. In short, aside from the downloading of a single map (indices) the process largely remains similar to the use of the ORNL DAAC API.</p>
+<h2 id="use">Use</h2>
+<h3 id="download-the-base-map">Download the base map</h3>
+<p>The HWSD v2.0 data is distributed as a spatial map where homogeneous regions are indicated with indices (integers). Although the underlying database is included in the package and can be accessed using <code>hwsdr::hwsd2</code>, the spatial data accompanying the database is too large for inclusion in the package. This spatial data needs to be downloaded explicitly.</p>
+<p>Ideally, to speed up processing between sessions you download the data to a fixed location (directory) on your computer. The function <code>ws_download()</code> will download the data there. If successful the function will return the path where the data is located.</p>
+<pre><code class="language-r"># set the ws_path variable using a FULL path name
+path &lt;- ws_download(
+  ws_path = &quot;/your/full/path&quot;,
+  verbose = TRUE
+)
+</code></pre>
+<p>To create persistence of the data between sessions, you can set the ~.Renviron file to contain a <code>WS_PATH</code> variable pointing to the directory where you downloaded the data. This environmental variable will then be read at startup and will be the default file location when using the <code>hwsdr</code> package for v2.0 data.</p>
+<p>To set the .Renviron file you can use the <code>usethis</code> package and the <code>usethis::edit_r_environ()</code> function, which will create the file and open it in RStudio for you to edit.</p>
+<pre><code class="language-r">usethis::edit_r_environ()
+</code></pre>
+<p>In the editor window you can then write:</p>
+<pre><code>WS_PATH = &quot;/your/full/path&quot;
+</code></pre>
+<p>A restart of the R(Studio) session is required for this to be considered in further processing. After this you can call the path by using <code>Sys.getenv(&quot;WS_PATH&quot;)</code> and passing the value to the <code>ws_path</code> parameter in <code>ws_subset()</code>. Al;ternatively you set it manually, and keep track of the gridded file location yourself in all your scripts.</p>
+<h3 id="single-pixel-location-download">Single pixel location download</h3>
+<p>Get world soil values for a single site using the following format, specifying coordinates as a pair of longitude, latitude coordinates (longitude, latitude). Here the call only extracts the top soil (layer = “D1”) fraction of sand and silt (% weight) for one specific location. Note that unlike HWSD v1.2 as available through the ORNL DAAC API the new version of the database has seven layers (D1 - D7) instead of just a top soil and sub-soil layer.</p>
+<pre><code class="language-r">values &lt;- ws_subset(
+  site = &quot;HWSD_V2&quot;,
+  location = c(-81, 34),
+  param = c(&quot;SAND&quot;,&quot;SILT&quot;),
+  layer = &quot;D1&quot;,
+  version = &quot;2.0&quot;,
+  ws_path = &quot;/your/full/path&quot;
+)
+</code></pre>
+<p>At this location we have a top soil fraction of sand of 78% weight and a silt fraction of 12 % weight! Data are returned as tidy data frames including basic meta-data of the query for later subsetting.</p>
+<pre><code class="language-r">print(values)
+#&gt; # A tibble: 2 × 5
+#&gt;   value latitude longitude site  parameter
+#&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;    
+#&gt; 1    50       34       -81 HWSD  SAND     
+#&gt; 2    24       34       -81 HWSD  SILT
+</code></pre>
+<h3 id="gridded-data">Gridded data</h3>
+<p>You can grab gridded data by specifying a bounding box c(lon, lat, lon, lat) defined by a bottom left and top right coordinates. Here the call only extracts the top soil (D1 layer) fraction of sand (%).</p>
+<pre><code class="language-r">sand &lt;- ws_subset(
+    location = c(-81, 32, -80, 34),
+    param = &quot;SAND&quot;,
+    layer = &quot;D1&quot;,
+    version = &quot;2.0&quot;,
+    ws_path = Sys.getenv(&quot;WS_PATH&quot;),
+    # ws_path = &quot;/your/full/path&quot;,
+    internal = TRUE
+  )
+</code></pre>
+<pre><code class="language-r">terra::plot(sand)
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-6" /></p>
+<p>Alternatively you can use <code>sf</code> bounding box (<code>st_bbox()</code>) function output to define an extent over which you want to extract gridded data. The structure of the function also allows for pipes to be used.</p>
+<pre><code class="language-r">  a &lt;- sf::st_sf(a = 1:2,
+                geom = sf::st_sfc(
+                  sf::st_point(c(34, -81)),
+                  sf::st_point(c(32, -80))),
+                crs = 4326)
+
+  t_sand &lt;- a %&gt;%
+    sf::st_bbox() %&gt;%
+    ws_subset(
+      version = &quot;2.0&quot;,
+      param = &quot;SAND&quot;,
+      layer = &quot;D1&quot;,
+      ws_path = Sys.getenv(&quot;WS_PATH&quot;)
+      )
+</code></pre>
+<p>This call gives an equivalent dataset as above, as shown in the plot.</p>
+<pre><code class="language-r">terra::plot(sand)
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-8" /></p>
+</div>
+<div class="include-after">
+</div>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>

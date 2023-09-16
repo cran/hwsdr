@@ -32,10 +32,10 @@ ws_get <- function(
   # formulate query to pass to httr
   query <- list(
     "var" = var,
-    "south" = location[1],
-    "west" = location[2],
-    "east" = location[4],
-    "north" = location[3],
+    "south" = location[2],
+    "west" = location[1],
+    "east" = location[3],
+    "north" = location[4],
     "disableProjSubset" = "on",
     "horizStride"= 1,
     "accept"="netcdf4"
@@ -82,7 +82,7 @@ ws_get <- function(
     return(NULL)
     
   } else {
-    r <- raster::raster(file)
+    r <- terra::rast(file)
     return(r)
   }
 }
